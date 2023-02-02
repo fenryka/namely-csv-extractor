@@ -1,10 +1,11 @@
+import abc
 import os
-import pprint
+import re
+from typing import AnyStr, Dict
 
 import click
+
 from namely import Namely, NamelyType, NamelyPagedQuery
-from typing import AnyStr, Dict
-import abc
 
 # -------------------------------------------------------------------------------
 
@@ -13,12 +14,26 @@ GroupsType = Dict[AnyStr, Dict[AnyStr, AnyStr]]
 # -------------------------------------------------------------------------------
 
 
-def value(s: Dict, k: AnyStr):
+# If we find any commas (at least one) in the string, then escape it with
+# wrapping quotes, first escaping extant quotes with additional quote
+# marks as per the CSV RFC
+def normalise(s: AnyStr) -> AnyStr:
+    if s.find(',') > 0:
+        s = re.sub(r'"', '""', s)
+
+        return "\"{}\"".format(s)
+    else:
+        return s
+
+# -------------------------------------------------------------------------------
+
+
+def value(s: Dict, k: AnyStr) -> AnyStr:
     try:
         if s[k] is None:
             return ""
         else:
-            return s[k]
+            return normalise(str(s[k]))
 
     except KeyError:
         return ""
@@ -33,7 +48,7 @@ def nestedValue(s: Dict, k1: AnyStr, k2: AnyStr) -> AnyStr:
         if s[k1][k2] is None:
             return ""
         else:
-            return s[k1][k2]
+            return normalise(str(s[k1][k2]))
 
     except KeyError:
         return ""
@@ -136,11 +151,11 @@ class SalaryValue(EmployeeValue):
     def v(self, s: Dict) -> AnyStr:
         currency = nestedValue(s, 'salary', 'currency_type')
         if currency == "GBP":
-            return "£" + str(nestedValue(s, "salary", "yearly_amount"))
+            return "£" + nestedValue(s, "salary", "yearly_amount")
         elif currency == "USD":
-            return "$" + str(nestedValue(s, "salary", "yearly_amount"))
+            return "$" + nestedValue(s, "salary", "yearly_amount")
         elif currency == "EUR":
-            return "€" + str(nestedValue(s, "salary", "yearly_amount"))
+            return "€" + nestedValue(s, "salary", "yearly_amount")
         else:
             return ""
 
@@ -228,19 +243,23 @@ def profiles(namely_: NamelyType, groups_: GroupsType, verbose=False):
 
 
 @click.command()
-@click.argument("company_")
-@click.argument("file_")
-def cli(company_: AnyStr, file_: AnyStr):
-    ctx = {'namely': Namely.namely_login(company_)}
+@click.option('--verbose', '-v', is_flag=True)
+@click.option("--file", '-f', default=None, type=click.Path(exists=False))
+@click.argument("company")
+def cli(verbose, company: AnyStr, file: AnyStr):
+    namely = Namely.namely_login(company)
 
-    groups_ = groups(ctx['namely'], True)
-    staff = profiles(ctx['namely'], groups_, True)
+    groups_ = groups(namely, verbose)
+    staff = profiles(namely, groups_, verbose)
 
-    with open(file_, 'w') as file:
-        file.write(",".join(map(lambda x: x.header, details)) + os.linesep)
+    if not file:
+        file = "{}.csv".format(company)
+
+    with open(file, 'w') as f:
+        f.write(",".join(map(lambda x: x.header, details)) + os.linesep)
         for s in staff.values():
             try:
-                file.write(",".join(map(lambda x: x.v(s), details)) + os.linesep)
+                f.write(",".join(map(lambda x: x.v(s), details)) + os.linesep)
             except TypeError:
                 print("TypeError: ", end='')
                 print(list(map(lambda x: x.v(s), details)))

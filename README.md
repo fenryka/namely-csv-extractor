@@ -20,3 +20,6 @@ replace <company> with your organisaitons namely identifier. _id est_ the othat 
 ```
 python3 namely_profile_extract.py <company>
 ```
+## CSV RFC 
+
+https://www.ietf.org/rfc/rfc4180.txt
