@@ -15,7 +15,7 @@ understood by my [organisation chart](https://github.com/fenryka/org-chart) draw
 
 ## Usage
 
-replace <company> with your organisaitons namely identifier. _id est_ the othat that appears `https://<company>.namely.com`
+replace <company> with your organisaitons namely identifier. _id est_ the one that that appears in `https://<company>.namely.com`
 
 ```
 python3 namely_profile_extract.py <company>
