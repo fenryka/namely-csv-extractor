@@ -1,6 +1,7 @@
 import abc
 import os
 import re
+import sys
 from typing import AnyStr, Dict
 
 import click
@@ -188,7 +189,7 @@ details = [
 # -------------------------------------------------------------------------------
 
 
-def groups(namely_: NamelyType, verbose=False) -> GroupsType:
+def fetchGroups(namely_: NamelyType, verbose=False) -> GroupsType:
     if verbose:
         print("Fetching groups")
 
@@ -208,7 +209,7 @@ def groups(namely_: NamelyType, verbose=False) -> GroupsType:
 # -------------------------------------------------------------------------------
 
 
-def profiles(namely_: NamelyType, groups_: GroupsType, verbose=False):
+def fetchProfiles(namely_: NamelyType, groups_: GroupsType, verbose=False):
     if verbose:
         print("Fetching Profiles")
 
@@ -224,6 +225,12 @@ def profiles(namely_: NamelyType, groups_: GroupsType, verbose=False):
             break
 
         for profile in res.json()['profiles']:
+            if verbose:
+                try:
+                    print(profile['full_name'] + ": " + profile['image']['original'])
+                except TypeError:
+                    pass
+
             staff[profile['id']] = profile
             for links in profile['links']['groups']:
                 staff[profile['id']][groups_[links['id']]['type']] = groups_[links['id']]['title']
@@ -245,15 +252,20 @@ def profiles(namely_: NamelyType, groups_: GroupsType, verbose=False):
 @click.command()
 @click.option('--verbose', '-v', is_flag=True)
 @click.option("--file", '-f', default=None, type=click.Path(exists=False))
+@click.option("--replace", '-r', default=False)
 @click.argument("company")
-def cli(verbose, company: AnyStr, file: AnyStr):
+def cli(verbose, company: AnyStr, file: AnyStr, replace):
     namely = Namely.namely_login(company)
-
-    groups_ = groups(namely, verbose)
-    staff = profiles(namely, groups_, verbose)
 
     if not file:
         file = "{}.csv".format(company)
+
+    if not replace and os.path.exists(file):
+        click.echo("Error: file already exists: '{}'".format(file), err=True)
+        sys.exit(1)
+
+    groups = fetchGroups(namely, verbose)
+    staff = fetchProfiles(namely, groups, verbose)
 
     with open(file, 'w') as f:
         f.write(",".join(map(lambda x: x.header, details)) + os.linesep)
