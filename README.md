@@ -13,6 +13,19 @@
 Extract from Namely a (popular?) HR platform information,via the REST API, to populate CSV files in a format
 understood by my [organisation chart](https://github.com/fenryka/org-chart) drawing application.
 
+## Setup
+
+Create virtual environment for Python
+```
+virtualenv venv
+source venv/bin/activate
+```
+
+Install dependencies
+```commandline
+pip install .
+```
+
 ## Usage
 
 replace <company> with your organisaitons namely identifier. _id est_ the one that that appears in `https://<company>.namely.com`
