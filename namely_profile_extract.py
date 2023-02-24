@@ -147,44 +147,37 @@ class GenderValue (EmployeeValue):
 
 
 class SalaryValue(EmployeeValue):
-    def __init__(self): super().__init__("Salary")
+    def __init__(self, hide_sensitive=True):
+        super().__init__("Salary")
+        self.hide_sensitive = hide_sensitive
 
     def v(self, s: Dict) -> AnyStr:
-        currency = nestedValue(s, 'salary', 'currency_type')
-        if currency == "GBP":
-            return "£" + nestedValue(s, "salary", "yearly_amount")
-        elif currency == "USD":
-            return "$" + nestedValue(s, "salary", "yearly_amount")
-        elif currency == "EUR":
-            return "€" + nestedValue(s, "salary", "yearly_amount")
-        else:
+        if self.hide_sensitive:
             return ""
+        else:
+            currency = nestedValue(s, 'salary', 'currency_type')
+            if currency == "GBP":
+                return "£" + nestedValue(s, "salary", "yearly_amount")
+            elif currency == "USD":
+                return "$" + nestedValue(s, "salary", "yearly_amount")
+            elif currency == "EUR":
+                return "€" + nestedValue(s, "salary", "yearly_amount")
+            else:
+                return ""
 
 # -------------------------------------------------------------------------------
 
 
 class DoBValue (EmployeeValue):
-    def __init__(self): super().__init__("Date of Birth")
-    def v(self, s: Dict) -> AnyStr: return value(s, "dob")
+    def __init__(self, hide_sensitive):
+        super().__init__("Date of Birth")
+        self.hide_sensitive = hide_sensitive
 
-# -------------------------------------------------------------------------------
-
-
-details = [
-    EmployeeIDValue(),
-    EthnicityValue(),
-    FullNameValue(),
-    JobTitleValue(),
-    StartDateValue(),
-    OfficeLocValue(),
-    OfficeCityValue(),
-    TeamValue(),
-    DivisionsValue(),
-    StartDateValue(),
-    ReportsToValue(),
-    GenderValue(),
-    SalaryValue(),
-    DoBValue()]
+    def v(self, s: Dict) -> AnyStr:
+        if self.hide_sensitive:
+            return ""
+        else:
+            return value(s, "dob")
 
 # -------------------------------------------------------------------------------
 
@@ -253,8 +246,9 @@ def fetchProfiles(namely_: NamelyType, groups_: GroupsType, verbose=False):
 @click.option('--verbose', '-v', is_flag=True)
 @click.option("--file", '-f', default=None, type=click.Path(exists=False))
 @click.option("--replace", '-r', default=False)
+@click.option("--hide-sensitive", '-s', default=True)
 @click.argument("company")
-def cli(verbose, company: AnyStr, file: AnyStr, replace):
+def cli(verbose, company: AnyStr, file: AnyStr, replace, hide_sensitive):
     namely = Namely.namely_login(company)
 
     if not file:
@@ -266,6 +260,22 @@ def cli(verbose, company: AnyStr, file: AnyStr, replace):
 
     groups = fetchGroups(namely, verbose)
     staff = fetchProfiles(namely, groups, verbose)
+
+    details = [
+        EmployeeIDValue(),
+        EthnicityValue(),
+        FullNameValue(),
+        JobTitleValue(),
+        StartDateValue(),
+        OfficeLocValue(),
+        OfficeCityValue(),
+        TeamValue(),
+        DivisionsValue(),
+        StartDateValue(),
+        ReportsToValue(),
+        GenderValue(),
+        SalaryValue(hide_sensitive),
+        DoBValue(hide_sensitive)]
 
     with open(file, 'w') as f:
         f.write(",".join(map(lambda x: x.header, details)) + os.linesep)

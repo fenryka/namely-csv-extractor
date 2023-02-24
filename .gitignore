@@ -3,3 +3,4 @@
 *.csv
 venv
 division_to_csv.egg-info/
+__pycache__/
