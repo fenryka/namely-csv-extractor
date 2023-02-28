@@ -1,15 +1,14 @@
-from typing import AnyStr
-
 import click
 import pycurl
 import certifi
 
+from typing import AnyStr
 from namely import Namely, NamelyType, NamelyPagedQuery
 
 # -------------------------------------------------------------------------------
 
 
-image_url = 'https://r3.namely.com/utils/profile_thumbnails'
+image_url = 'https://{}.namely.com/utils/profile_thumbnails'
 
 # -------------------------------------------------------------------------------
 
@@ -32,7 +31,7 @@ def fetchProfilesPicURLS(namely_: NamelyType, session_id, namely_session, direct
             try:
                 with open('{}/{}.jpg'.format(directory, profile['full_name'].replace(" ", "_")), 'wb') as f:
                     c = pycurl.Curl()
-                    c.setopt(c.URL, "{}/{}/200".format(image_url, profile['id']))
+                    c.setopt(c.URL, "{}/{}/200".format(image_url.format(namely_.company), profile['id']))
                     c.setopt(c.WRITEDATA, f)
                     c.setopt(c.CAINFO, certifi.where())
                     c.setopt(c.FOLLOWLOCATION, True)

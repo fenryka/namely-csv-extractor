@@ -22,6 +22,7 @@ class Namely:
             'Accept': "application/json"
         }
         self.address = "https://{}{}".format(company_, NAMELY_ADDRESS)
+        self.company = company_
 
     def get(self, target_: AnyStr, args_=None, verbose=False):
         if args_ is None:
