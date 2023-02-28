@@ -1,10 +1,14 @@
 # Table of Contents
 
 <!-- ts -->
-* [Namely CSV Extractor](#namely-csv-extractor-)
+* [Namely CSV Extractor ](#namely-csv-extractor-)
     * [Purpose](#purpose)
+    * [Setup](#setup)
     * [Usage](#usage)
-<!-- te -->
+    * [CSV RFC ](#csv-rfc-)
+<!-- end -->
+
+<!-- body-start -->
 
 # Namely CSV Extractor 
 
