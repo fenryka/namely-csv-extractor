@@ -23,11 +23,14 @@ class Namely:
         }
         self.address = "https://{}{}".format(company_, NAMELY_ADDRESS)
 
-    def get(self, target_: AnyStr, args_: List, verbose=False):
+    def get(self, target_: AnyStr, args_=None, verbose=False):
+        if args_ is None:
+            args_ = []
+
         request = "{}/{}".format(self.address, target_)
 
         arg_list = "&".join(args_)
-        if len(arg_list) :
+        if len(arg_list):
             request = request + "?" + arg_list
 
         if verbose:

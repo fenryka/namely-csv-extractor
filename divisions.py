@@ -2,7 +2,6 @@ import click
 import pprint
 
 from namely import Namely
-from typing import Type
 
 # -------------------------------------------------------------------------------
 
@@ -17,8 +16,8 @@ def cli(company_):
 # -------------------------------------------------------------------------------
 
 
-def get_divisions(namely_: Type[Namely]):
-    resp = namely_.get("groups", [])
+def get_divisions(namely_: Namely):
+    resp = namely_.get("groups")
     divisions = list(filter(lambda x: x['type'] == "Divisions", resp.json()['groups']))
     return{x['title']: x['id'] for x in divisions}
 

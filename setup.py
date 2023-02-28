@@ -6,7 +6,7 @@ setup(
     version='1.0',
     py_modules=['divisions', 'namely', 'namely_profile_extract'],
     install_requires=[
-        'click', 'keyring', 'requests'
+        'click', 'keyring', 'requests', 'pycurl', 'certifi'
     ],
     entry_points='''
         [console_scripts]
